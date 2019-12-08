@@ -15,13 +15,14 @@ class TicTacRoyale:
     def __init__(self, placementStorage: placStorMod.IPlacementStorage, roomStorage: roomStorMod.IRoomStorage):
         self.rooms = roomStorage
         self.placements = placementStorage
+        self.hashState = 0
 
     def createRoom(self) -> roomMod.Room:
         code = random.randint(0, 10000000)
         while findRoom(code) is not None:
             code = random.randint(0, 10000000)
-        room = roomMod.Room(code)
-        self.rooms.setRoom(room)
+        room = roomMod.Room(code, self.placements)
+        self.rooms.setRoom(code, room)
         return room
 
     def findRoom(self, code: int) -> roomMod.Room:
@@ -35,9 +36,18 @@ class TicTacRoyale:
 
     def addPawn(self,room: roomMod.Room, pawn: pawnMod.Pawn) -> placMod.Placement:
         if not self.hasPawn(pawn.getLocation()):
-            placement = placMod.Placement(room, pawn)
-            self.placements.setPlacement(pawn.getLocation(), placement)
-            return placement
+            if room.getLastTurn() is not pawn.getType():
+                placement = placMod.Placement(room, pawn)
+                self.placements.setPlacement(pawn.getLocation(), placement)
+                self.hashState += 1
+                return placement
+            else:
+                raise Exception("Waiting for opponents to move")
         else:
             raise Exception("Location already used")
+
+    def getHashState(self) -> int:
+        return self.hashState
         
+    def getPlacementSince(self, hashState: int) -> typ.Sequence[placMod.Placement]:
+        return self.placements.listPlacement(self.hashState - hashState, hashState)
