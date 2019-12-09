@@ -6,25 +6,21 @@ import client.asset.font as fontMod
 import client.frame.stack as stackMod
 import client.client as clientMod
 import client.frame.board_player as fBoardPlayer
-
-
-class TicTacToeClient:
-
-    def __init__(self, host, port, identifier="main-"):
-        self.client = clientMod.Client(host, port, identifier)
-        self.client.Start(["TicTacToeServer"])
-        self.server = self.client.GetObject("TicTacToeServer")
+import client.client as clientMod
+import typing as typ
+import json
 
 def RunGUI():
     root = tki.Tk()
     fontMod.Font.Initialize(root)
     root.title("Tic Tac Royale")
     root.resizable(width=False, height=False)
+    client = clientMod.TicTacToeClient("localhost", 7777)
     stackFrame = stackMod.FrameStack(root)
-    home = fHomeMod.Home(stackFrame)
-    fCreateRoomMod.CreateRoom(stackFrame)
-    fJoinRoomMod.JoinRoom(stackFrame)
-    fBoardPlayer.BoardPlayer(stackFrame)
+    home = fHomeMod.Home(stackFrame, client)
+    fCreateRoomMod.CreateRoom(stackFrame, client)
+    fJoinRoomMod.JoinRoom(stackFrame, client)
+    fBoardPlayer.BoardPlayer(stackFrame, client)
     stackFrame.push(home)
     root.mainloop()
 

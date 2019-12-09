@@ -12,4 +12,6 @@ class JoinRoom:
         if room is None:
             raise Exception("Room Not Found")
         spot = room.getAvailableSpot()
+        if spot is None:
+            raise Exception("No Spot Left")
         return spot

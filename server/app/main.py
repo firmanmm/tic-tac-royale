@@ -15,6 +15,7 @@ import server.domain.model.tictactoe as tttMod
 import Pyro4
 import json
 import typing as typ
+import traceback
 
 class TicTacToeServer:
     def __init__(self, host, port, identifier="main-"):
@@ -32,44 +33,63 @@ class TicTacToeServer:
     def start(self):
         self.server.Start([self])
 
-    def createRoom(self) -> str:
+    def createRoom(self) -> int:
         try:
             room = self.ucCreateRoom.Create()
             return self._createSuccess(room.getCode())
         except Exception as e:
             return self._createError(e)
 
-    def joinRoom(self, code: int):
+    def joinRoom(self, code: int) -> int:
         try:
             pawnType = self.ucJoinRoom.Join(code)
-            return self._createSuccess(pawnType)
+            return self._createSuccess(pawnType.value)
         except Exception as e:
             return self._createError(e)
 
-    def listPlacement(self, hashState: int) -> typ.Sequence[placMod.Placement]:
+    def listPlacement(self, hashState: int) -> typ.Sequence[typ.Dict[str, typ.Any]]:
         try:
             placements = self.ucListPlacement.List(hashState)
-            return self._createSuccess(placements)
+            processedPlacement : typ.Sequence[typ.Dict[str, typ.Any]] = list()
+            for placement in placements:
+                pawn = placement.getPawn()
+                room = placement.getRoom()
+                location = pawn.getLocation()
+                processedPlacement.append({
+                    "type" : pawnMod.PawnType.toInt(pawn.getType()),
+                    "room" : {
+                        "code" : room.getCode(),
+                        "winner": room.getWinner(),
+                        "lastActivityX": room.getLastActivityX(),
+                        "lastActivityO": room.getLastActivityO(),
+                    },
+                    "location": {
+                        "x" : location.getX(),
+                        "y" : location.getY(),
+                    }
+                })
+            return self._createSuccess({
+                "placements": processedPlacement,
+                "hashState": self.ticTacToe.getHashState(),
+            })
         except Exception as e:
             return self._createError(e)
     
     def placePawn(self, code: int, posX: int, posY: int, pawnType: int) -> bool:
         try:
-            realPawnType : pawnMod.PawnType = None
-            if pawnType == 0:
-                realPawnType = pawnMod.PawnType.O
-            elif pawnType == 1:
-                realPawnType = pawnMod.PawnType.X
+            realPawnType = pawnMod.PawnType.fromInt(pawnType)
             if realPawnType is None:
                 raise Exception("Wrong Pawn Type")
-            winner = self.ucPlacePawn.Place(code, posX, posX, realPawnType)
+            winner = self.ucPlacePawn.Place(code, posX, posY, realPawnType)
             return self._createSuccess(winner)
         except Exception as e:
             return self._createError(e)
 
     def _createError(self, exception : Exception) -> str:
+        traceback.print_exc()
+        print(str(exception))
         return json.dumps({
-            "error": exception,
+            "error": str(exception),
         })
 
     def _createSuccess(self, message: typ.Any) -> str:
@@ -81,4 +101,4 @@ class TicTacToeServer:
 
 
 server = TicTacToeServer("localhost", 7777)
-server.Start()
+server.start()

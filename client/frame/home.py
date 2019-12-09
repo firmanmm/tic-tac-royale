@@ -4,10 +4,13 @@ import tkinter.ttk as ttk
 import client.asset.font as fontMod
 import client.frame.base as baseMod
 import client.frame.stack as stackMod
+import client.client as clientMod
+import tkinter.messagebox as msgBoxMod
 
 class Home(baseMod.IBase):
 
-    def __init__(self, stackFrame: stackMod.FrameStack):
+    def __init__(self, stackFrame: stackMod.FrameStack, client: clientMod.TicTacToeClient):
+        self.client = client
         root = stackFrame.getTkInstance()
         self.stack = stackFrame
         stackFrame.registerNamed(self)
@@ -57,7 +60,11 @@ class Home(baseMod.IBase):
         self.frame.grid_remove()
 
     def createRoom(self):
-        self.stack.pushNamed("CreateRoom")
+        try:
+            self.client.createRoom()
+            self.stack.pushNamed("CreateRoom")
+        except Exception as e:
+            msgBoxMod.showerror("Error", str(e))
 
     def joinRoom(self):
         self.stack.pushNamed("JoinRoom")

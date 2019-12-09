@@ -19,9 +19,9 @@ class TicTacRoyale:
 
     def createRoom(self) -> roomMod.Room:
         code = random.randint(0, 10000000)
-        while findRoom(code) is not None:
+        while self.findRoom(code) is not None:
             code = random.randint(0, 10000000)
-        room = roomMod.Room(code, self.placements)
+        room = roomMod.Room(code)
         self.rooms.setRoom(code, room)
         return room
 
@@ -36,15 +36,162 @@ class TicTacRoyale:
 
     def addPawn(self,room: roomMod.Room, pawn: pawnMod.Pawn) -> placMod.Placement:
         if not self.hasPawn(pawn.getLocation()):
-            if room.getLastTurn() is not pawn.getType():
-                placement = placMod.Placement(room, pawn)
-                self.placements.setPlacement(pawn.getLocation(), placement)
-                self.hashState += 1
-                return placement
+            if room.getWinner() is None:
+                if room.getLastTurn() is not pawn.getType():
+                    placement = placMod.Placement(room, pawn)
+                    self.placements.setPlacement(pawn.getLocation(), placement)
+                    room.addPawn(pawn)
+                    self._updateWinCondition(room, pawn)
+                    self.hashState += 1
+                    return placement
+                else:
+                    raise Exception("Waiting for opponents to move")
             else:
-                raise Exception("Waiting for opponents to move")
+                raise Exception("This room already end")
         else:
             raise Exception("Location already used")
+
+    def _updateWinCondition(self, room: roomMod.Room, pawn: pawnMod.Pawn):
+        #Check winning condition, Crude but works :>
+        #Check Horizontal
+        ##Check left side
+        count = -1
+        for x in range(5):
+            pawnLoc = pawn.getLocation()
+            xPos = pawnLoc.getX() + x #TODO: Refactor Later
+            pos = locMod.Location(xPos, pawnLoc.getY())
+            posPlacement = self.placements.getPlacement(pos)
+            if posPlacement is not None:
+                if posPlacement.getRoom().getCode() is room.getCode():
+                    posPawn = posPlacement.getPawn()
+                    if posPawn.getType() is pawn.getType():
+                        count += 1
+                        continue
+            break
+
+        ##Check right side
+        for x in range(5):
+            pawnLoc = pawn.getLocation()
+            xPos = pawnLoc.getX() - x #TODO: Refactor Later
+            pos = locMod.Location(xPos, pawnLoc.getY())
+            posPlacement = self.placements.getPlacement(pos)
+            if posPlacement is not None:
+                if posPlacement.getRoom().getCode() is room.getCode():
+                    posPawn = posPlacement.getPawn()
+                    if posPawn.getType() is pawn.getType():
+                        count += 1
+                        continue
+            break
+
+        if count >= 5 :
+            room.setWinner(pawn.getType())
+            return
+
+        #Check Vertical
+        ##Check top side
+        count = -1
+        for y in range(5):
+            pawnLoc = pawn.getLocation()
+            yPos = pawnLoc.getY() + y #TODO: Refactor Later
+            pos = locMod.Location(pawnLoc.getX(), yPos)
+            posPlacement = self.placements.getPlacement(pos)
+            if posPlacement is not None:
+                if posPlacement.getRoom().getCode() is room.getCode():
+                    posPawn = posPlacement.getPawn()
+                    if posPawn.getType() is pawn.getType():
+                        count += 1
+                        continue
+            break
+
+        ##Check bottom side
+        for y in range(5):
+            pawnLoc = pawn.getLocation()
+            yPos = pawnLoc.getY() - y #TODO: Refactor Later
+            pos = locMod.Location(pawnLoc.getX(), yPos)
+            posPlacement = self.placements.getPlacement(pos)
+            if posPlacement is not None:
+                if posPlacement.getRoom().getCode() is room.getCode():
+                    posPawn = posPlacement.getPawn()
+                    if posPawn.getType() is pawn.getType():
+                        count += 1
+                        continue
+            break
+        
+        if count >= 5 :
+            room.setWinner(pawn.getType())
+            return
+
+        #Check Diagonal Right
+        ##Check top side
+        count = -1
+        for i in range(5):
+            pawnLoc = pawn.getLocation()
+            xPos = pawnLoc.getX() + i #TODO: Refactor Later
+            yPos = pawnLoc.getY() + i #TODO: Refactor Later
+            pos = locMod.Location(xPos, yPos)
+            posPlacement = self.placements.getPlacement(pos)
+            if posPlacement is not None:
+                if posPlacement.getRoom().getCode() is room.getCode():
+                    posPawn = posPlacement.getPawn()
+                    if posPawn.getType() is pawn.getType():
+                        count += 1
+                        continue
+            break
+
+        ##Check bottom side
+        for i in range(5):
+            pawnLoc = pawn.getLocation()
+            xPos = pawnLoc.getX() - i #TODO: Refactor Later
+            yPos = pawnLoc.getY() - i #TODO: Refactor Later
+            pos = locMod.Location(xPos, yPos)
+            posPlacement = self.placements.getPlacement(pos)
+            if posPlacement is not None:
+                if posPlacement.getRoom().getCode() is room.getCode():
+                    posPawn = posPlacement.getPawn()
+                    if posPawn.getType() is pawn.getType():
+                        count += 1
+                        continue
+            break
+        
+        if count >= 5 :
+            room.setWinner(pawn.getType())
+            return
+        
+        #Check Diagonal Left
+        ##Check top side
+        count = -1
+        for i in range(5):
+            pawnLoc = pawn.getLocation()
+            xPos = pawnLoc.getX() - i #TODO: Refactor Later
+            yPos = pawnLoc.getY() + i #TODO: Refactor Later
+            pos = locMod.Location(xPos, yPos)
+            posPlacement = self.placements.getPlacement(pos)
+            if posPlacement is not None:
+                if posPlacement.getRoom().getCode() is room.getCode():
+                    posPawn = posPlacement.getPawn()
+                    if posPawn.getType() is pawn.getType():
+                        count += 1
+                        continue
+            break
+
+        ##Check bottom side
+        for i in range(5):
+            pawnLoc = pawn.getLocation()
+            xPos = pawnLoc.getX() + i #TODO: Refactor Later
+            yPos = pawnLoc.getY() - i #TODO: Refactor Later
+            pos = locMod.Location(xPos, yPos)
+            posPlacement = self.placements.getPlacement(pos)
+            if posPlacement is not None:
+                if posPlacement.getRoom().getCode() is room.getCode():
+                    posPawn = posPlacement.getPawn()
+                    if posPawn.getType() is pawn.getType():
+                        count += 1
+                        continue
+            break
+        
+        if count >= 5 :
+            room.setWinner(pawn.getType())
+            return
 
     def getHashState(self) -> int:
         return self.hashState

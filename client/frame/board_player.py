@@ -4,7 +4,10 @@ import tkinter.ttk as ttk
 import client.asset.font as fontMod
 import client.frame.base as baseMod
 import client.frame.stack as stackMod
+import client.client as clientMod
+import tkinter.messagebox as msgMod
 import typing as typ
+import traceback
 import enum
 
 class BoardType(enum.Enum):
@@ -24,7 +27,8 @@ class GridListener():
 
 class BoardPlayer(baseMod.IBase):
 
-    def __init__(self, stackFrame: stackMod.FrameStack):
+    def __init__(self, stackFrame: stackMod.FrameStack, client: clientMod.TicTacToeClient):
+        self.client = client
         stackFrame.registerNamed(self)
         self.stack = stackFrame
         root = stackFrame.getTkInstance()
@@ -36,6 +40,12 @@ class BoardPlayer(baseMod.IBase):
             text="Tic Tac Royale",
             font=fontMod.Font.TitleFont)
         title.place(x=400-title.winfo_reqwidth()/2, y=20)
+        roomCode = ttk.Label(
+            self.frame, 
+            text="Goodluck!",
+            font=fontMod.Font.NormalFont)
+        roomCode.place(x=400-roomCode.winfo_reqwidth()/2, y=50)
+        self.roomCodeLabel = roomCode
         locationFrame = self.buildLocationFrame()
         locationFrame.place(x=800-locationFrame.winfo_reqwidth()-20, y=100)
 
@@ -46,10 +56,11 @@ class BoardPlayer(baseMod.IBase):
         self.hide()
 
     def buildBoardFrame(self) -> ttk.Frame:
-        self.board : typ.Dict[typ.Tuple[int, int], ] = dict() 
-        boardFrame = ttk.Frame(self.frame, width=300, height=300)
-        for i in range(10):
-            for j in range(10):
+        self.board : typ.Sequence[typ.Sequence[tki.Button]] = list()
+        boardFrame = ttk.Frame(self.frame, width=330, height=330)
+        for i in range(11):
+            self.board.append(list())
+            for j in range(11):
                 btnFrame = tki.Frame(boardFrame, width=30, height=30)
                 btnFrame.grid_propagate(False)
                 btnFrame.columnconfigure(0, weight=1)
@@ -59,7 +70,7 @@ class BoardPlayer(baseMod.IBase):
                 btnGrid.grid(sticky="wens")
                 btnFrame.update()
                 btnFrame.place(x=j*30, y=i*30)
-                self.board[(j, i)] = btnGrid
+                self.board[i].append(btnGrid)
         boardFrame.update()
         return boardFrame
     
@@ -131,7 +142,34 @@ class BoardPlayer(baseMod.IBase):
 
     
     def gridCallback(self, x, y):
-        print("X : %d, Y : %d" % (x, y))
+        x = x - 5 + self.xLocation.get()
+        y = -y + 5 + self.yLocation.get()
+        try:
+            if self.client.placePawn(x, y):
+                msgMod.showinfo("Win", "Yes you win, Thank You!")
+        except Exception as e:
+            traceback.print_exc()
+            msgMod.showerror("Error", str(e))
+        print("Clicked : X : %d, Y : %d" % (x, y))
+        self.client.synchronize()
+        self.updateGrid()
+
+
+    def updateGrid(self):
+        print("Updating Grid Display")
+        for i in range(11):
+            for j in range(11):
+                grid = self.board[i][j]
+                symbol = " "
+                xPos = j - 5 + self.xLocation.get()
+                yPos = -i + 5 + self.yLocation.get()
+                pawn = self.client.getPawnAtCoordinate(xPos, yPos)
+                if pawn is not None:
+                    loc = pawn.getLocation()
+
+                    print("X > %d, Y > %d || XPos %d, YPos %d" % (loc.getX(), loc.getY(), xPos, yPos))
+                    symbol = pawn.getPawnSymbol()
+                grid.configure(text=symbol)
 
     def upHistory(self):
         print("History Up")
@@ -140,9 +178,10 @@ class BoardPlayer(baseMod.IBase):
         print("History Down")
 
     def changeCenter(self):
-        print("Center Changed")
+        print("Center Changed To X : %d and Y : %d" % (self.xLocation.get(), self.yLocation.get()))
 
     def show(self):
+        self.roomCodeLabel.configure(text="Room : %d" % (self.client.getRoomCode()))
         self.frame.grid()
 
     def hide(self):
