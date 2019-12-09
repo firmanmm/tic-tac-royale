@@ -39,7 +39,8 @@ class TicTacToeClient:
 
     def placePawn(self, posX: int, posY: int) -> bool:
         resp = self.server.placePawn(self.roomCode, posX, posY, self.pawnType)
-        return self._parseResponse(resp)
+        resp = self._parseResponse(resp)
+        return resp is self.pawnType
 
     def createRoom(self):
         resp = self.server.createRoom()
@@ -58,7 +59,6 @@ class TicTacToeClient:
         for rawPlacement in parsedResp["placements"]:
             roomCode = rawPlacement["room"]["code"]
             pawnType = rawPlacement["type"]
-            print(pawnType)
             xPos = rawPlacement["location"]["x"]
             yPos = rawPlacement["location"]["y"]
             location = modelMod.Location(xPos, yPos)
@@ -74,8 +74,14 @@ class TicTacToeClient:
             return self.placementMap[location]
         return None
 
+    def getPawnType(self) -> int:
+        return self.pawnType
+
     def _parseResponse(self, response: str) -> typ.Any:
         result : typ.Dict[str, typ.Any] = json.loads(response)
         if "error" in result:
             raise Exception(result["error"])
         return result["response"]
+
+    def getPlacementHistory(self) -> typ.Sequence[modelMod.Placement]:
+        return self.placementHistory

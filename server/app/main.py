@@ -43,7 +43,7 @@ class TicTacToeServer:
     def joinRoom(self, code: int) -> int:
         try:
             pawnType = self.ucJoinRoom.Join(code)
-            return self._createSuccess(pawnType.value)
+            return self._createSuccess(pawnMod.PawnType.toInt(pawnType))
         except Exception as e:
             return self._createError(e)
 
@@ -59,7 +59,7 @@ class TicTacToeServer:
                     "type" : pawnMod.PawnType.toInt(pawn.getType()),
                     "room" : {
                         "code" : room.getCode(),
-                        "winner": room.getWinner(),
+                        "winner": pawnMod.PawnType.toInt(room.getWinner()),
                         "lastActivityX": room.getLastActivityX(),
                         "lastActivityO": room.getLastActivityO(),
                     },
@@ -81,7 +81,7 @@ class TicTacToeServer:
             if realPawnType is None:
                 raise Exception("Wrong Pawn Type")
             winner = self.ucPlacePawn.Place(code, posX, posY, realPawnType)
-            return self._createSuccess(winner)
+            return self._createSuccess(pawnMod.PawnType.toInt(winner))
         except Exception as e:
             return self._createError(e)
 

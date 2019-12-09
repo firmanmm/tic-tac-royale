@@ -13,4 +13,4 @@ class ListPlacement:
         currentState = self.tictactoe.getHashState()
         if hashState != currentState :
             return self.tictactoe.getPlacementSince(hashState)
-        return None
+        return list()

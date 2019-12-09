@@ -8,6 +8,8 @@ import client.client as clientMod
 import tkinter.messagebox as msgMod
 import typing as typ
 import traceback
+import threading
+import time
 import enum
 
 class BoardType(enum.Enum):
@@ -28,6 +30,8 @@ class GridListener():
 class BoardPlayer(baseMod.IBase):
 
     def __init__(self, stackFrame: stackMod.FrameStack, client: clientMod.TicTacToeClient):
+        self.historyOffset = 0
+        self.lock = threading.Lock()
         self.client = client
         stackFrame.registerNamed(self)
         self.stack = stackFrame
@@ -147,12 +151,12 @@ class BoardPlayer(baseMod.IBase):
         try:
             if self.client.placePawn(x, y):
                 msgMod.showinfo("Win", "Yes you win, Thank You!")
+                exit()
         except Exception as e:
             traceback.print_exc()
             msgMod.showerror("Error", str(e))
         print("Clicked : X : %d, Y : %d" % (x, y))
-        self.client.synchronize()
-        self.updateGrid()
+        self.synchronize()
 
 
     def updateGrid(self):
@@ -164,25 +168,81 @@ class BoardPlayer(baseMod.IBase):
                 xPos = j - 5 + self.xLocation.get()
                 yPos = -i + 5 + self.yLocation.get()
                 pawn = self.client.getPawnAtCoordinate(xPos, yPos)
+                background = "white"
                 if pawn is not None:
                     loc = pawn.getLocation()
-
-                    print("X > %d, Y > %d || XPos %d, YPos %d" % (loc.getX(), loc.getY(), xPos, yPos))
                     symbol = pawn.getPawnSymbol()
-                grid.configure(text=symbol)
+                    if pawn.getRoomCode() != self.client.getRoomCode():
+                        background = "#363636"
+                grid.configure(text=symbol, background=background)
+
+    def updateHistory(self):
+        try:
+            history = self.client.getPlacementHistory()
+            lower = len(history) - 10 - self.historyOffset
+            if lower < 0:
+                lower = 0
+            elif lower >= len(history):
+                lower = len(history)
+            upper = len(history) - self.historyOffset
+            if upper < 0:
+                upper = 0
+            elif upper >= len(history):
+                upper = len(history)
+            print("Lower %d, Upper %d" % (lower, upper))
+            if upper == lower:
+                history = list()
+            else:
+                history = history[lower : upper]
+            for i in range(10):
+                historyTab = self.histories[i]
+                newTxt = ""
+                idx = 9 - i
+                if idx >= 0 and idx < len(history):
+                    data = history[idx]
+                    location = data.getLocation()
+                    newTxt = "%s placed at (%d, %d)" % (data.getPawnSymbol(), location.getX(), location.getY())
+                historyTab.configure(text=newTxt)
+        except Exception as e:
+            print(str(e))
 
     def upHistory(self):
-        print("History Up")
+        self.historyOffset += 1
+        history = self.client.getPlacementHistory()
+        if self.historyOffset >= len(history):
+            self.historyOffset = len(history) - 1
+        self.synchronize()
 
     def downHistory(self):
-        print("History Down")
+        self.historyOffset -= 1
+        if self.historyOffset < 0:
+            self.historyOffset = 0
+        self.synchronize()
 
     def changeCenter(self):
         print("Center Changed To X : %d and Y : %d" % (self.xLocation.get(), self.yLocation.get()))
+        self.synchronize()
 
     def show(self):
         self.roomCodeLabel.configure(text="Room : %d" % (self.client.getRoomCode()))
         self.frame.grid()
+        thread = threading.Thread(target=self.synchronizeRoutine)
+        thread.start()
 
     def hide(self):
         self.frame.grid_remove()
+
+    def synchronizeRoutine(self):
+        try:
+            while True:
+                self.synchronize()
+                time.sleep(2)
+        except Exception as e:
+            exit()
+
+    def synchronize(self):
+        self.lock.acquire()
+        self.client.synchronize()
+        self.updateHistory()
+        self.updateGrid()
+        self.lock.release()

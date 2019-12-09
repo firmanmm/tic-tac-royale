@@ -14,6 +14,7 @@ class PawnType(enum.Enum):
             return 1
         elif pawnType is cls.N:
             return 2
+        return None
 
     @classmethod
     def fromInt(cls, pawnInt: int):

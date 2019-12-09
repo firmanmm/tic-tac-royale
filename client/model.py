@@ -29,7 +29,6 @@ class Placement:
         return self.pawnType
     
     def getPawnSymbol(self) -> str:
-        print(self.pawnType)
         if self.pawnType == 0:
             return "X"
         elif self.pawnType == 1:
