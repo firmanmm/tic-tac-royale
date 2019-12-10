@@ -12,25 +12,14 @@ import threading
 import time
 import enum
 import sys
+import random
 
-class BoardType(enum.Enum):
-    Empty = 0 
-    Occupied = 1
-    XPiece = 2
-    OPiece = 3 
-
-class GridListener():
-    def __init__(self, x, y, callback):
-        self.x = x
-        self.y = y
-        self.callback = callback
-    
-    def Handle(self):
-        self.callback(self.x, self.y)
-
-class BoardPlayer(baseMod.IBase):
+class WatchRoom(baseMod.IBase):
 
     def __init__(self, stackFrame: stackMod.FrameStack, client: clientMod.TicTacToeClient):
+        self.allowedColorChar = "0123456789ABCDEF"
+        self.roomCodeToColor : typ.Dict[int, str] = dict()
+        self.roomColorToCode : typ.Dict[str, int] = dict()
         self.historyOffset = 0
         self.lock = threading.Lock()
         self.client = client
@@ -47,7 +36,7 @@ class BoardPlayer(baseMod.IBase):
         title.place(x=400-title.winfo_reqwidth()/2, y=20)
         roomCode = ttk.Label(
             self.frame, 
-            text="Goodluck!",
+            text="Watching",
             font=fontMod.Font.NormalFont)
         roomCode.place(x=400-roomCode.winfo_reqwidth()/2, y=50)
         self.roomCodeLabel = roomCode
@@ -70,8 +59,7 @@ class BoardPlayer(baseMod.IBase):
                 btnFrame.grid_propagate(False)
                 btnFrame.columnconfigure(0, weight=1)
                 btnFrame.rowconfigure(0, weight=1)
-                listener = GridListener(j, i, self.gridCallback)
-                btnGrid = tki.Button(btnFrame, text=" ", font=fontMod.Font.PawnGridFont, background="white", command=listener.Handle)
+                btnGrid = tki.Button(btnFrame, text=" ", font=fontMod.Font.PawnGridFont, background="white")
                 btnGrid.grid(sticky="wens")
                 btnFrame.update()
                 btnFrame.place(x=j*30, y=i*30)
@@ -173,13 +161,12 @@ class BoardPlayer(baseMod.IBase):
                 if pawn is not None:
                     loc = pawn.getLocation()
                     symbol = pawn.getPawnSymbol()
-                    if pawn.getRoomCode() != self.client.getRoomCode():
-                        background = "#363636"
+                    background = self.getColor(pawn.getRoomCode())
                 grid.configure(text=symbol, background=background)
 
     def updateHistory(self):
         try:
-            history = self.client.getPlacementHistory()
+            history = self.client.getPlacement()
             upper = len(history) - self.historyOffset
             if upper < 0:
                 upper = 0
@@ -199,17 +186,36 @@ class BoardPlayer(baseMod.IBase):
                 historyTab = self.histories[i]
                 newTxt = ""
                 idx = 9 - i
+                background = "#FFFFFF"
                 if idx >= 0 and idx < len(history):
                     data = history[idx]
                     location = data.getLocation()
-                    newTxt = "%s placed at (%d, %d)" % (data.getPawnSymbol(), location.getX(), location.getY())
-                historyTab.configure(text=newTxt)
+                    newTxt = "Room %d placed %s at (%d, %d)" % (data.getRoomCode(), data.getPawnSymbol(), location.getX(), location.getY())
+                    background = self.getColor(data.getRoomCode())
+                historyTab.configure(text=newTxt, background=background)
         except Exception as e:
             print(str(e))
 
+    def getColor(self, roomCode: int) -> str:
+        if roomCode in self.roomCodeToColor:
+            return self.roomCodeToColor[roomCode]
+        color = self.generateColor()
+        while color in self.roomColorToCode:
+            color = self.generateColor()
+        self.roomCodeToColor[roomCode] = color
+        self.roomColorToCode[color] = roomCode
+        return color
+
+    def generateColor(self) -> str:
+        color = "#"
+        for i in range(6):
+            randIdx = random.randint(0, len(self.allowedColorChar) - 1)
+            color = "%s%s" % (color, self.allowedColorChar[randIdx])
+        return color
+
     def upHistory(self):
         self.historyOffset += 1
-        history = self.client.getPlacementHistory()
+        history = self.client.getPlacement()
         if self.historyOffset >= len(history):
             self.historyOffset = len(history) - 1
         self.synchronize()
@@ -225,7 +231,6 @@ class BoardPlayer(baseMod.IBase):
         self.synchronize()
 
     def show(self):
-        self.roomCodeLabel.configure(text="Room : %d" % (self.client.getRoomCode()))
         self.frame.grid()
         thread = threading.Thread(target=self.synchronizeRoutine, daemon=True)
         thread.start()

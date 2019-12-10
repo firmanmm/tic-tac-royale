@@ -6,6 +6,7 @@ import client.asset.font as fontMod
 import client.frame.stack as stackMod
 import client.client as clientMod
 import client.frame.board_player as fBoardPlayer
+import client.frame.watch_room as fWatchRoom
 import client.client as clientMod
 import typing as typ
 import json
@@ -22,6 +23,7 @@ def RunGUI():
     fCreateRoomMod.CreateRoom(stackFrame, client)
     fJoinRoomMod.JoinRoom(stackFrame, client)
     fBoardPlayer.BoardPlayer(stackFrame, client)
+    fWatchRoom.WatchRoom(stackFrame, client)
     stackFrame.push(home)
     root.mainloop()
 

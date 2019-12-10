@@ -48,7 +48,7 @@ class Home(baseMod.IBase):
         newRoomBtn.pack(pady=5)
         joinRoomBtn = tki.Button(menuFrame, text="Ikuti Ruangan", width=30, height=1, font=fontMod.Font.MenuButtonFont, command=self.joinRoom)
         joinRoomBtn.pack(pady=5)
-        viewBtn = tki.Button(menuFrame, text="Penonton", width=30, height=1, font=fontMod.Font.MenuButtonFont)
+        viewBtn = tki.Button(menuFrame, text="Penonton", width=30, height=1, font=fontMod.Font.MenuButtonFont, command=self.watchRoom)
         viewBtn.pack(pady=5)
         menuFrame.update()
         return menuFrame
@@ -68,3 +68,6 @@ class Home(baseMod.IBase):
 
     def joinRoom(self):
         self.stack.pushNamed("JoinRoom")
+    
+    def watchRoom(self):
+        self.stack.pushNamed("WatchRoom")
