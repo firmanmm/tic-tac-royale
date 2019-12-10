@@ -1,21 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="89bceec1-adae-4e01-b25c-2c32c9b5a212" name="Default Changelist" comment="" />
+    <list default="true" id="d61d207e-fd40-4f99-b92b-64959ba32ff2" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/client/frame/spectate.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/frame/home.py" beforeDir="false" afterPath="$PROJECT_DIR$/client/frame/home.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/client/main.py" afterDir="false" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectId" id="1UmjGvlbEoPDOnm0bQlRH72f2hD" />
-  <component name="PropertiesComponent">
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
-  </component>
+  <component name="ProjectId" id="1Un5Nbvzt39Y2DUtmnEFU9tmJic" />
   <component name="RunDashboard">
     <option name="ruleStates">
       <list>
@@ -33,11 +41,11 @@
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="89bceec1-adae-4e01-b25c-2c32c9b5a212" name="Default Changelist" comment="" />
-      <created>1575968572681</created>
+      <changelist id="d61d207e-fd40-4f99-b92b-64959ba32ff2" name="Default Changelist" comment="" />
+      <created>1575979481035</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1575968572681</updated>
+      <updated>1575979481035</updated>
     </task>
     <servers />
   </component>
