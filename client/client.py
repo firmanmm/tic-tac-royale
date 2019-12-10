@@ -25,7 +25,6 @@ class TicTacToeClient:
 
     def __init__(self, host: str, port: int, identifier="main-", servers=[]):
         self.client = Client(host, port, identifier)
-        self.client.Start(servers)
         self.servers = list()
         self.serverName = servers
         self.mainServer = None
@@ -38,6 +37,7 @@ class TicTacToeClient:
         self.refindServer(servers)
 
     def refindServer(self, servers: typ.Sequence[str]):
+        self.client.Start(servers)
         for server in servers:
             serverProxy = self.client.GetObject(server)
             self.servers.append(serverProxy)
@@ -99,7 +99,10 @@ class TicTacToeClient:
                     deleteList.append(server)
                     pass
             for delete in deleteList:
-                self.servers.remove(delete)
+                try:
+                    self.servers.remove(delete)
+                except:
+                    pass
         
         if self.mainServer is not None:
             return self.mainServer
@@ -117,7 +120,10 @@ class TicTacToeClient:
                     deleteList.append(server)
                     pass
             for delete in deleteList:
-                self.servers.remove(delete)
+                try:
+                    self.servers.remove(delete)
+                except:
+                    pass
         
         if self.mainServer is not None:
             return self.mainServer
@@ -140,3 +146,6 @@ class TicTacToeClient:
 
     def getPlacementHistory(self) -> typ.Sequence[modelMod.Placement]:
         return self.placementHistory
+    
+    def getPlacement(self) -> typ.Sequence[modelMod.Placement]:
+        return self.placementList
