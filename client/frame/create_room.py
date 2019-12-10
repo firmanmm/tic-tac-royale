@@ -4,9 +4,11 @@ import tkinter.ttk as ttk
 import client.asset.font as fontMod
 import client.frame.base as baseMod
 import client.frame.stack as stackMod
+import client.client as clientMod
 
 class CreateRoom(baseMod.IBase):
-    def __init__(self, stackFrame: stackMod.FrameStack):
+    def __init__(self, stackFrame: stackMod.FrameStack, client: clientMod.TicTacToeClient):
+        self.client = client
         self.stack = stackFrame
         root = stackFrame.getTkInstance()
         stackFrame.registerNamed(self)
@@ -38,6 +40,7 @@ class CreateRoom(baseMod.IBase):
 
     def show(self):
         self.frame.grid()
+        self.stack.pushNamed("BoardPlayer")
 
     def hide(self):
         self.frame.grid_remove()

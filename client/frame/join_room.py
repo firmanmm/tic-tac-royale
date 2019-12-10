@@ -4,9 +4,12 @@ import tkinter.ttk as ttk
 import client.asset.font as fontMod
 import client.frame.base as baseMod
 import client.frame.stack as stackMod
+import client.client as clientMod
+import tkinter.messagebox as msgMod
 
 class JoinRoom(baseMod.IBase):
-    def __init__(self, stackFrame: stackMod.FrameStack):
+    def __init__(self, stackFrame: stackMod.FrameStack, client: clientMod.TicTacToeClient):
+        self.client = client
         self.stack = stackFrame
         root = stackFrame.getTkInstance()
         stackFrame.registerNamed(self)
@@ -25,7 +28,8 @@ class JoinRoom(baseMod.IBase):
         
     def buildCodeFrame(self) -> tki.Widget:
         codeFrame = ttk.Frame(self.frame)
-        codeEntry = ttk.Entry(codeFrame, width=20, font=fontMod.Font.NormalFont)
+        self.entryVar = tki.IntVar(codeFrame, value=0, name="entryFrame")
+        codeEntry = ttk.Entry(codeFrame, width=20, textvariable=self.entryVar, font=fontMod.Font.NormalFont)
         codeEntry.grid(column=1, row=0, columnspan=2)
         codeSymbol = ttk.Label(
             codeFrame,
@@ -46,4 +50,10 @@ class JoinRoom(baseMod.IBase):
         self.frame.grid_remove()
 
     def joinRoom(self):
-        print("Trying to Join")
+        code = self.entryVar.get()
+        print("Trying to Join %d" % (code))
+        try:
+            self.client.joinRoom(code)
+            self.stack.pushNamed("BoardPlayer")
+        except Exception as e:
+            msgMod.showerror("Error", str(e))

@@ -5,39 +5,25 @@ import client.frame.join_room as fJoinRoomMod
 import client.asset.font as fontMod
 import client.frame.stack as stackMod
 import client.client as clientMod
-
-class TicTacToeClient:
-
-    def __init__(self, host, port, identifier="main-"):
-        self.client = clientMod.Client(host, port, identifier)
-        self.client.Start(["TicTacToeServer"])
-        self.server = self.client.GetObject("TicTacToeServer")
-    
-    def Create(self):
-        response = self.server.Create()
-        return response
-    
-    def Join(self,code):
-        response = self.server.Join(code)
-        return response
-    
-    def ListByRoom(self,code):
-        response = self.server.ListByRoom(code)
-        return response
-    
-    def Place(self,x_coord,y_coord,code):
-        response = self.server.Place(x_coord,y_coord,code)
-        return response
+import client.frame.board_player as fBoardPlayer
+import client.frame.spectate as spect
+import client.client as clientMod
+import typing as typ
+import json
 
 def RunGUI():
     root = tki.Tk()
     fontMod.Font.Initialize(root)
     root.title("Tic Tac Royale")
     root.resizable(width=False, height=False)
+    servers = servers=["ALPHA-TicTacToeServer", "OMEGA-TicTacToeServer", "EPSILON-TicTacToeServer"]
+    client = clientMod.TicTacToeClient("localhost", 7777, identifier="", servers=servers)
     stackFrame = stackMod.FrameStack(root)
-    home = fHomeMod.Home(stackFrame)
-    fCreateRoomMod.CreateRoom(stackFrame)
-    fJoinRoomMod.JoinRoom(stackFrame)
+    home = fHomeMod.Home(stackFrame, client)
+    fCreateRoomMod.CreateRoom(stackFrame, client)
+    fJoinRoomMod.JoinRoom(stackFrame, client)
+    fBoardPlayer.BoardPlayer(stackFrame, client)
+    spect.Spectate(stackFrame, client)
     stackFrame.push(home)
     root.mainloop()
 

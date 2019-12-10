@@ -1,16 +1,15 @@
 import server.domain.model.tictactoe as tttMod
 import server.domain.model.room as roomMod
-import asyncio.locks as lockMod
 
 class CreateRoom:
 
-    def __init__(self, ticTacToe: tttMod.TicTacRoyale, lock: lockMod.Lock):
+    def __init__(self, ticTacToe: tttMod.TicTacRoyale):
         self.tictactoe = ticTacToe
-        self.lock = lock
 
     def Create(self) -> roomMod.Room:
-        self.lock.acquire()
         room = self.tictactoe.createRoom()
-        self.lock.release()
         return room
+
+    def CreateByCode(self, code: int) ->roomMod.Room:
+        room = self.tictactoe.createRoomByCode(code)
 

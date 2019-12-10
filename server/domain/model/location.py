@@ -8,3 +8,9 @@ class Location:
 
     def getY(self) -> int:
         return self.y
+
+    def __eq__(self, value):
+        return self.x == value.x and self.y == value.y
+
+    def __hash__(self):
+        return hash("%d %d" % (self.x, self.y))
