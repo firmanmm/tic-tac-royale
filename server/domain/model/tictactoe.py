@@ -21,6 +21,11 @@ class TicTacRoyale:
         code = random.randint(0, 10000000)
         while self.findRoom(code) is not None:
             code = random.randint(0, 10000000)
+        return self.createRoomByCode(code)
+    
+    def createRoomByCode(self, code: int) -> roomMod.Room:
+        if self.findRoom(code) is not None:
+            raise Exception("Room with code %d already exist" % (code))
         room = roomMod.Room(code)
         self.rooms.setRoom(code, room)
         return room

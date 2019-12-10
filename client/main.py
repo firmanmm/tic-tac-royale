@@ -15,7 +15,8 @@ def RunGUI():
     fontMod.Font.Initialize(root)
     root.title("Tic Tac Royale")
     root.resizable(width=False, height=False)
-    client = clientMod.TicTacToeClient("localhost", 7777)
+    servers = servers=["ALPHA-TicTacToeServer", "OMEGA-TicTacToeServer", "EPSILON-TicTacToeServer"]
+    client = clientMod.TicTacToeClient("localhost", 7777, identifier="", servers=servers)
     stackFrame = stackMod.FrameStack(root)
     home = fHomeMod.Home(stackFrame, client)
     fCreateRoomMod.CreateRoom(stackFrame, client)

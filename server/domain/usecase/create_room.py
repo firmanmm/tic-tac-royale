@@ -1,6 +1,5 @@
 import server.domain.model.tictactoe as tttMod
 import server.domain.model.room as roomMod
-import asyncio.locks as lockMod
 
 class CreateRoom:
 
@@ -10,4 +9,7 @@ class CreateRoom:
     def Create(self) -> roomMod.Room:
         room = self.tictactoe.createRoom()
         return room
+
+    def CreateByCode(self, code: int) ->roomMod.Room:
+        room = self.tictactoe.createRoomByCode(code)
 

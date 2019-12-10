@@ -23,37 +23,49 @@ class Client:
 
 class TicTacToeClient:
 
-    def __init__(self, host: str, port: int, identifier="main-"):
+    def __init__(self, host: str, port: int, identifier="main-", servers=[]):
         self.client = Client(host, port, identifier)
-        self.client.Start(["TicTacToeServer"])
-        self.server = self.client.GetObject("TicTacToeServer")
+        self.client.Start(servers)
+        self.servers = list()
+        self.serverName = servers
+        self.mainServer = None
         self.pawnType : int = None
         self.roomCode : int = None
         self.hashState : int = 0
         self.placementList : typ.Sequence[modelMod.Placement] = list()
         self.placementHistory : typ.Sequence[modelMod.Placement] = list()
         self.placementMap : typ.Dict[modelMod.Location, modelMod.Placement] = dict()
+        self.refindServer(servers)
+
+    def refindServer(self, servers: typ.Sequence[str]):
+        for server in servers:
+            serverProxy = self.client.GetObject(server)
+            self.servers.append(serverProxy)
 
     def getRoomCode(self):
         return self.roomCode
 
     def placePawn(self, posX: int, posY: int) -> bool:
-        resp = self.server.placePawn(self.roomCode, posX, posY, self.pawnType)
+        server = self.getActiveServer()
+        resp = server.placePawn(self.roomCode, posX, posY, self.pawnType)
         resp = self._parseResponse(resp)
         return resp is self.pawnType
 
     def createRoom(self):
-        resp = self.server.createRoom()
+        server = self.getActiveServer()
+        resp = server.createRoom()
         self.roomCode = self._parseResponse(resp)
         self.joinRoom(self.roomCode)
 
     def joinRoom(self, code: int):
-        resp = self.server.joinRoom(code)
+        server = self.getActiveServer()
+        resp = server.joinRoom(code)
         self.pawnType = self._parseResponse(resp)
         self.roomCode = code
     
     def synchronize(self):
-        resp = self.server.listPlacement(self.hashState)
+        server = self.getActiveServer()
+        resp = server.listPlacement(self.hashState)
         parsedResp = self._parseResponse(resp)
         self.hashState = parsedResp["hashState"]
         for rawPlacement in parsedResp["placements"]:
@@ -67,6 +79,49 @@ class TicTacToeClient:
                 self.placementHistory.append(placement)
             self.placementList.append(placement)
             self.placementMap[location] = placement
+
+    def getActiveServer(self):
+        if self.mainServer is not None:
+            try:
+                self.mainServer._pyroBind()
+                return self.mainServer
+            except Exception as e:
+                self.mainServer = None
+
+        if self.mainServer is None:
+            deleteList = list()
+            for server in self.servers:
+                try:
+                    server._pyroBind()
+                    self.mainServer = server
+                except Exception as e:
+                    print(str(e))
+                    deleteList.append(server)
+                    pass
+            for delete in deleteList:
+                self.servers.remove(delete)
+        
+        if self.mainServer is not None:
+            return self.mainServer
+        
+        self.refindServer(self.serverName)
+
+        if self.mainServer is None:
+            deleteList = list()
+            for server in self.servers:
+                try:
+                    server._pyroBind()
+                    self.mainServer = server
+                except Exception as e:
+                    print(str(e))
+                    deleteList.append(server)
+                    pass
+            for delete in deleteList:
+                self.servers.remove(delete)
+        
+        if self.mainServer is not None:
+            return self.mainServer
+        raise Exception("Failed To Connect to all server")
 
     def getPawnAtCoordinate(self, xPos: int, yPos: int):
         location = modelMod.Location(xPos, yPos)

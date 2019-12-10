@@ -11,6 +11,7 @@ import traceback
 import threading
 import time
 import enum
+import sys
 
 class BoardType(enum.Enum):
     Empty = 0 
@@ -233,16 +234,24 @@ class BoardPlayer(baseMod.IBase):
         self.frame.grid_remove()
 
     def synchronizeRoutine(self):
-        try:
-            while True:
+        while True:
+            try:
                 self.synchronize()
                 time.sleep(2)
-        except Exception as e:
-            exit()
+            except KeyboardInterrupt as e:
+                print("Keyboard Interrupt")
+                sys.exit(1)
+                break
+            except Exception as e:
+                pass
 
     def synchronize(self):
-        self.lock.acquire()
-        self.client.synchronize()
-        self.updateHistory()
-        self.updateGrid()
+        self.lock.acquire(timeout=2)
+        try:
+            self.client.synchronize()
+            self.updateHistory()
+            self.updateGrid()
+        except Exception as e:
+            print(str(e))
+            self.lock.release()
         self.lock.release()
