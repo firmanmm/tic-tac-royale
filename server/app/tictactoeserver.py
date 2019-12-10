@@ -26,6 +26,7 @@ class TicTacToeServer:
         self.port = port
 
         self.lock = threadMod.Lock()
+        self.identifier = identifier
 
         self.ticTacToe = tttMod.TicTacRoyale(placementStorage, roomStorage)
         self.server = serverMod.Server(host, port, identifier)
@@ -214,6 +215,15 @@ class TicTacToeServer:
             raise Exception(result["error"])
         return result["response"]
 
-    def registerListener(self, name: str):
+    def registerListener(self, name: str, cascade: bool = True):
         url = "PYRONAME:%s@%s:%d" % (name, self.host, self.port)
-        self.syncServer.append(Pyro4.Proxy(url))
+        proxy = Pyro4.Proxy(url)
+        try:
+            if cascade:
+                proxy.registerListener(self.identifier+self.__class__.__name__, False)
+                print("Registered listener for %s" % (url))
+        except Exception as e:
+            print("Failed to connect to %s, Exception %s" % (url, str(e)))
+            return
+        self.syncServer.append(proxy)
+
