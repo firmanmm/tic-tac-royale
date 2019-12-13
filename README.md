@@ -13,6 +13,7 @@ Client will be used to receive input from user.
 ### Server
 Since this project utilize Pyro4 please run Pyro4 Name server using below command
 - Pyro4 Name Server : `pyro4-ns --host=localhost --port=7777`
+
 There are several server pre-setup to allow registering of all possible server to be used for fail recovery purpose. Please run below command to run it.
 - Alpha Server : `python -m server.runner.alpha`
 - Omega Server : `python -m server.runner.omega`
@@ -22,4 +23,7 @@ There are several server pre-setup to allow registering of all possible server t
 Before running the client, please run atleast one server.
 `python -m client.main`
 
+## Screenshot
+Here is a screenshot showing how it looks like
+![Screenshot of TicTacRoyale](Screenshot.png)
 
